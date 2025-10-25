@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Quiz Gamificado – ISO/IEC 12207</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;600;700&display=swap');
+  
+  :root { 
+    --primary:#00d9ff; 
+    --secondary:#7c3aed;
+    --accent:#ff00ff;
+    --bg:#05070a; 
+    --card:#0a0e17; 
+    --card-hover:#0f1420;
+    --text:#f0f6fc; 
+    --muted:#8b9dc3; 
+    --ok:#00ff88; 
+    --err:#ff4757; 
+    --warn:#ffd93d;
+    --glow-primary:rgba(0,217,255,0.4);
+    --glow-secondary:rgba(124,58,237,0.4);
+  }
+  
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  html,body{
+    height:100%;
+    overflow-x:hidden;
+  }
+  
+  body{
+    margin:0;
+    background:#05070a;
+    color:var(--text);
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    position:relative;
+    font-size:16px;
+  }
+  
+  /* Animated background */
+  body::before {
+    content:'';
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(124,58,237,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(0,217,255,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,0,255,0.08) 0%, transparent 50%);
+    pointer-events:none;
+    z-index:0;
+    animation:bgPulse 15s ease-in-out infinite;
+  }
+  
+  @keyframes bgPulse {
+    0%, 100% { opacity:0.6; }
+    50% { opacity:1; }
+  }
+  
+  /* Floating particles */
+  .particles {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:1;
+  }
+  
+  .particle {
+    position:absolute;
+    width:3px;
+    height:3px;
+    background:var(--primary);
+    border-radius:50%;
+    animation:float 20s linear infinite;
+    opacity:0.3;
+    box-shadow:0 0 10px var(--glow-primary);
+  }
+  
+  @keyframes float {
+    0% { transform:translateY(100vh) translateX(0); }
+    100% { transform:translateY(-100vh) translateX(100px); }
+  }
+  
+  header{
+    position:sticky;
+    top:0;
+    background:rgba(10,14,23,0.95);
+    backdrop-filter:blur(20px) saturate(180%);
+    border-bottom:1px solid rgba(0,217,255,0.2);
+    padding:1rem;
+    z-index:100;
+    box-shadow:0 4px 30px rgba(0,0,0,0.3);
+  }
+  
+  .wrap{
+    max-width:1200px;
+    margin:0 auto;
+    padding:1rem;
+    position:relative;
+    z-index:2;
+  }
+  
+  h1{
+    margin:0.5rem 0 0 0;
+    font-size:1.1rem;
+    font-family:'Orbitron',sans-serif;
+    font-weight:700;
+    letter-spacing:0.5px;
+    background:linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    line-height:1.3;
+  }
+  
+  .row{
+    display:flex;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin-top:0.5rem;
+  }
+  
+  .left{flex:1 1 100%; min-width:0;}
+  .right{flex:1 1 100%; min-width:0;}
+  
+  .card{
+    background:linear-gradient(135deg, rgba(10,14,23,0.95), rgba(15,20,32,0.95));
+    border:1px solid rgba(0,217,255,0.2);
+    border-radius:16px;
+    padding:1.2rem;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    position:relative;
+    overflow:hidden;
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+    margin-bottom:1rem;
+  }
+  
+  .card::before {
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:2px;
+    background:linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity:0;
+    transition:opacity 0.3s;
+  }
+  
+  .card:hover {
+    border-color:rgba(0,217,255,0.4);
+    transform:translateY(-2px);
+    box-shadow:
+      0 12px 48px rgba(0,0,0,0.5),
+      0 0 30px rgba(0,217,255,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  
+  .card:hover::before {
+    opacity:1;
+  }
+  
+  .meta{
+    display:flex;
+    gap:0.6rem;
+    flex-wrap:wrap;
+    font-size:0.8rem;
+    color:var(--muted);
+    align-items:center;
+  }
+  
+  .pill{
+    background:rgba(0,217,255,0.08);
+    border:1px solid rgba(0,217,255,0.3);
+    color:var(--primary);
+    padding:0.35rem 0.7rem;
+    border-radius:999px;
+    font-size:0.75rem;
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:0.4rem;
+    transition:all 0.3s;
+    white-space:nowrap;
+  }
+  
+  .pill:hover {
+    background:rgba(0,217,255,0.15);
+    transform:scale(1.05);
+  }
+  
+  .pill i {
+    font-size:0.9rem;
+  }
+  
+  .bar{
+    height:8px;
+    background:rgba(15,20,32,0.8);
+    border:1px solid rgba(0,217,255,0.2);
+    border-radius:999px;
+    overflow:hidden;
+    position:relative;
+  }
+  
+  .bar>span{
+    display:block;
+    height:100%;
+    background:linear-gradient(90deg,var(--primary),var(--accent),var(--ok));
+    background-size:200% 100%;
+    animation:shimmer 3s linear infinite;
+    box-shadow:0 0 20px var(--glow-primary);
+    border-radius:999px;
+    transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  
+  @keyframes shimmer {
+    0% { background-position:200% 0; }
+    100% { background-position:-200% 0; }
+  }
+  
+  .q-title{
+    font-size:1.2rem;
+    font-weight:700;
+    margin:1rem 0 1.2rem 0;
+    font-family:'Orbitron',sans-serif;
+    color:var(--text);
+    line-height:1.4;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+  }
+  
+  .options{
+    display:grid;
+    gap:0.8rem;
+  }
+  
+  .opt{
+    display:flex;
+    gap:0.8rem;
+    align-items:flex-start;
+    background:rgba(15,20,32,0.6);
+    border:2px solid rgba(0,217,255,0.2);
+    border-radius:14px;
+    padding:0.9rem 1rem;
+    cursor:pointer;
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position:relative;
+    overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  
+  .opt::before {
+    content:'';
+    position:absolute;
+    top:0;
+    left:-100%;
+    width:100%;
+    height:100%;
+    background:linear-gradient(90deg, transparent, rgba(0,217,255,0.1), transparent);
+    transition:left 0.5s;
+  }
+  
+  .opt:active,.opt:hover{
+    transform:translateX(4px);
+    background:rgba(0,217,255,0.08);
+    border-color:var(--primary);
+    box-shadow:0 0 20px rgba(0,217,255,0.2);
+  }
+  
+  .opt::before:active {
+    left:100%;
+  }
+  
+  .opt input{
+    width:20px;
+    height:20px;
+    cursor:pointer;
+    accent-color:var(--primary);
+    flex-shrink:0;
+    margin-top:2px;
+  }
+  
+  .opt span {
+    flex:1;
+    font-size:0.95rem;
+    line-height:1.5;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+  }
+  
+  .opt.correct{
+    border-color:var(--ok);
+    background:rgba(0,255,136,0.12);
+    animation:successPulse 0.6s ease-out;
+  }
+  
+  @keyframes successPulse {
+    0%, 100% { transform:scale(1); }
+    50% { transform:scale(1.01); }
+  }
+  
+  .opt.incorrect{
+    border-color:var(--err);
+    background:rgba(255,71,87,0.12);
+    animation:errorShake 0.5s ease-out;
+  }
+  
+  @keyframes errorShake {
+    0%, 100% { transform:translateX(0); }
+    25% { transform:translateX(-8px); }
+    75% { transform:translateX(8px); }
+  }
+  
+  .opt.disabled{
+    opacity:.5;
+    pointer-events:none;
+  }
+  
+  .actions{
+    display:flex;
+    gap:0.6rem;
+    flex-wrap:wrap;
+    margin-top:1rem;
+  }
+  
+  button{
+    border:0;
+    border-radius:12px;
+    padding:0.7rem 1.1rem;
+    cursor:pointer;
+    background:rgba(15,20,32,0.8);
+    color:var(--text);
+    border:2px solid rgba(0,217,255,0.3);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position:relative;
+    overflow:hidden;
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    -webkit-tap-highlight-color:transparent;
+    flex:1;
+    min-width:120px;
+    justify-content:center;
+  }
+  
+  button::before {
+    content:'';
+    position:absolute;
+    top:50%;
+    left:50%;
+    width:0;
+    height:0;
+    border-radius:50%;
+    background:rgba(0,217,255,0.3);
+    transform:translate(-50%,-50%);
+    transition:width 0.5s, height 0.5s;
+  }
+  
+  button:active::before, button:hover::before {
+    width:300px;
+    height:300px;
+  }
+  
+  button:active, button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(0,217,255,0.3);
+    border-color:var(--primary);
+  }
+  
+  button span {
+    position:relative;
+    z-index:1;
+  }
+  
+  button.primary{
+    background:linear-gradient(135deg, var(--primary), var(--secondary));
+    border-color:var(--primary);
+    color:white;
+    box-shadow:0 4px 15px rgba(0,217,255,0.3);
+  }
+  
+  button.primary:hover, button.primary:active {
+    box-shadow:0 6px 25px rgba(0,217,255,0.5);
+    transform:translateY(-3px);
+  }
+  
+  button.warn{
+    background:linear-gradient(135deg, var(--warn), #ff6b35);
+    border-color:var(--warn);
+    color:#111;
+    font-weight:700;
+    flex:0 1 auto;
+    min-width:100px;
+  }
+  
+  button.ghost{
+    background:transparent;
+    border-color:rgba(139,157,195,0.3);
+  }
+  
+  button:disabled {
+    opacity:0.4;
+    cursor:not-allowed;
+    transform:none !important;
+  }
+  
+  .feedback{
+    margin-top:1rem;
+    padding:0.9rem;
+    border-radius:12px;
+    font-size:0.95rem;
+    line-height:1.6;
+    background:rgba(0,217,255,0.05);
+    border-left:4px solid var(--primary);
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+  }
+  
+  .feedback strong{
+    color:var(--primary);
+    font-size:1rem;
+  }
+  
+  .score{
+    font-size:1.1rem;
+    font-weight:900;
+    font-family:'Orbitron',sans-serif;
+    background:linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:0.8rem;
+  }
+  
+  .stat{
+    display:flex;
+    justify-content:space-between;
+    margin:0.5rem 0;
+    padding:0.4rem 0;
+    color:var(--muted);
+    border-bottom:1px solid rgba(0,217,255,0.1);
+    font-size:0.9rem;
+  }
+  
+  .stat span:last-child {
+    color:var(--primary);
+    font-weight:700;
+  }
+  
+  .big{
+    font-size:2.5rem;
+    font-weight:900;
+    font-family:'Orbitron',sans-serif;
+    background:linear-gradient(135deg, var(--primary), var(--accent), var(--ok));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:1rem;
+    text-shadow:0 0 30px var(--glow-primary);
+  }
+  
+  .hint{
+    background:rgba(124,58,237,0.1);
+    border:2px dashed rgba(124,58,237,0.4);
+    border-radius:14px;
+    padding:0.9rem 1rem;
+    margin-top:0.8rem;
+    color:var(--text);
+    display:flex;
+    align-items:flex-start;
+    gap:0.8rem;
+    animation:hintGlow 2s ease-in-out infinite;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+  }
+  
+  @keyframes hintGlow {
+    0%, 100% { box-shadow:0 0 10px rgba(124,58,237,0.2); }
+    50% { box-shadow:0 0 25px rgba(124,58,237,0.4); }
+  }
+  
+  .hint::before {
+    content:'💡';
+    font-size:1.3rem;
+    flex-shrink:0;
+  }
+  
+  .lifelines{
+    display:flex;
+    gap:0.5rem;
+    flex-wrap:wrap;
+  }
+  
+  .lifelines button{
+    font-size:0.85rem;
+    flex:1;
+    min-width:90px;
+  }
+  
+  .hearts{
+    font-size:1rem;
+    letter-spacing:2px;
+  }
+  
+  .disabled{
+    opacity:.3 !important;
+    pointer-events:none !important;
+    filter:grayscale(1);
+  }
+  
+  .footer{
+    text-align:center;
+    color:var(--muted);
+    margin:1.5rem 0;
+    font-size:0.8rem;
+    padding:0.8rem;
+    line-height:1.5;
+  }
+  
+  .hidden{
+    display:none !important;
+  }
+  
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:0.4rem;
+    background:linear-gradient(135deg, rgba(0,217,255,0.15), rgba(124,58,237,0.15));
+    border:1px solid rgba(0,217,255,0.3);
+    border-radius:999px;
+    padding:0.4rem 0.8rem;
+    margin:0.3rem 0.3rem 0.3rem 0;
+    font-size:0.85rem;
+    font-weight:600;
+    transition:all 0.3s;
+    animation:badgeAppear 0.5s ease-out;
+  }
+  
+  @keyframes badgeAppear {
+    0% { opacity:0; transform:scale(0.5) rotate(-10deg); }
+    100% { opacity:1; transform:scale(1) rotate(0); }
+  }
+  
+  .badge:hover {
+    transform:scale(1.1);
+    box-shadow:0 0 20px rgba(0,217,255,0.3);
+  }
+  
+  .badge i{
+    font-style:normal;
+    font-size:1rem;
+  }
+  
+  .glow{
+    animation:questionGlow 2s ease-in-out infinite;
+  }
+  
+  @keyframes questionGlow {
+    0%, 100% { box-shadow:0 0 5px rgba(0,217,255,0.2); }
+    50% { box-shadow:0 0 20px rgba(0,217,255,0.4); }
+  }
+  
+  /* Avatar styles */
+  .avatar {
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--primary), var(--secondary));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.5rem;
+    border:3px solid rgba(0,217,255,0.3);
+    box-shadow:0 0 20px var(--glow-primary);
+    animation:avatarPulse 3s ease-in-out infinite;
+  }
+  
+  @keyframes avatarPulse {
+    0%, 100% { transform:scale(1); }
+    50% { transform:scale(1.05); }
+  }
+  
+  .header-content {
+    display:flex;
+    align-items:center;
+    gap:1rem;
+  }
+  
+  /* Confetti canvas */
+  #confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:9999;
+  }
+  
+  /* Responsive - Mobile first */
+  @media (min-width:768px) {
+    header{
+      padding:1.2rem 1.5rem;
+    }
+    
+    .row{
+      gap:1.5rem;
+      margin-top:1rem;
+    }
+    
+    h1{
+      font-size:1.4rem;
+      letter-spacing:1px;
+    }
+    
+    .wrap{
+      padding:1.5rem;
+    }
+    
+    .left{flex:1 1 680px; min-width:0;}
+    .right{flex:1 1 320px; min-width:280px;}
+    
+    .card{
+      padding:1.8rem;
+      margin-bottom:1.5rem;
+    }
+    
+    .meta{
+      gap:0.8rem;
+      font-size:0.9rem;
+    }
+    
+    .pill{
+      padding:0.4rem 0.8rem;
+      font-size:0.85rem;
+    }
+    
+    .bar{
+      height:10px;
+    }
+    
+    .q-title{
+      font-size:1.3rem;
+    }
+    
+    .options{
+      gap:0.9rem;
+    }
+    
+    .opt{
+      gap:0.9rem;
+      padding:1rem 1.2rem;
+      border-radius:16px;
+    }
+    
+    .opt span {
+      font-size:1rem;
+    }
+    
+    button{
+      padding:0.8rem 1.3rem;
+      font-size:0.95rem;
+    }
+    
+    button.warn{
+      flex:0 1 auto;
+      min-width:140px;
+    }
+    
+    .lifelines button{
+      min-width:140px;
+      font-size:0.9rem;
+    }
+    
+    .feedback{
+      padding:1rem;
+      font-size:1rem;
+    }
+    
+    .score{
+      font-size:1.3rem;
+    }
+    
+    .stat{
+      margin:0.6rem 0;
+      padding:0.5rem 0;
+      font-size:0.95rem;
+    }
+    
+    .big{
+      font-size:3.5rem;
+    }
+    
+    .hint{
+      padding:1rem 1.2rem;
+      gap:0.8rem;
+    }
+    
+    .hint::before {
+      font-size:1.5rem;
+    }
+    
+    .footer{
+      margin:2rem 0;
+      font-size:0.9rem;
+    }
+  }
+  
+  /* Print styles */
+  @media print {
+    body::before, .particles, header, button, .actions { display:none !important; }
+    .card { page-break-inside:avoid; border:1px solid #333; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<header>
+  <div class="wrap">
+    <div class="meta">
+      <span class="pill">Quiz ISO/IEC 12207</span>
+      <span class="pill">V&V • Tailoring</span>
+    </div>
+    <h1>¡Responde y gana puntos! Bonus por tiempo y rachas</h1>
+  </div>
+</header>
+
+<div class="wrap row">
+  <div class="left">
+    <section class="card" id="game">
+      <div class="stat"><span>Pregunta <b id="qnum">1</b>/<span id="qtotal"></span></span><span>Tiempo: <b id="tleft">20</b>s</span></div>
+      <div class="bar"><span id="timebar"></span></div>
+      <h2 class="q-title" id="qtitle">...</h2>
+      <div class="options" id="options"></div>
+      <div id="hintBox" class="hint hidden"></div>
+      <div class="actions">
+        <button class="primary" id="confirm">Confirmar</button>
+        <button class="ghost" id="next" disabled>Siguiente</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </section>
+
+    <section class="card">
+      <div class="actions lifelines">
+        <button id="hint" class="warn">💡 Pista</button>
+        <button id="fifty" class="warn">🎯 50/50</button>
+        <button id="skip" class="warn">⏭️ Saltar</button>
+      </div>
+      <div class="meta" style="margin-top:0.6rem">
+        <span>Vidas: <span id="lives" class="hearts">❤️❤️❤️</span></span>
+        <span>Racha: <b id="streak">0</b>×</span>
+        <span>Mult: <b id="mult">1.0</b>×</span>
+        <span>Ptos: <b id="score">0</b></span>
+      </div>
+    </section>
+  </div>
+
+  <div class="right">
+    <section class="card">
+      <div class="score">Panel</div>
+      <div class="stat"><span>Mejor</span><span id="best">0</span></div>
+      <div class="stat"><span>Exactitud</span><span id="acc">0%</span></div>
+      <div class="stat"><span>Progreso</span><span id="prog">0%</span></div>
+      <div class="bar" style="margin-top:0.4rem"><span id="progbar"></span></div>
+      <div style="margin-top:0.8rem" class="actions">
+        <button id="restart">🔄 Reiniciar</button>
+        <button id="print">🖨️ Imprimir</button>
+      </div>
+    </section>
+    <section class="card">
+      <div class="score">Insignias</div>
+      <div id="badges"></div>
+    </section>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="card hidden" id="summary">
+    <div class="row">
+      <div class="left">
+        <div class="big" id="finalScore">0</div>
+        <p id="finalMsg"></p>
+        <div id="finalBadges" style="margin:0.8rem 0"></div>
+        <div class="actions">
+          <button class="primary" id="playAgain">Jugar de nuevo</button>
+          <button id="print2">Imprimir</button>
+        </div>
+      </div>
+      <div class="right">
+        <div class="stat"><span>Correctas</span><span id="sumRight">0</span></div>
+        <div class="stat"><span>Incorrectas</span><span id="sumWrong">0</span></div>
+        <div class="stat"><span>Racha máxima</span><span id="sumStreak">0</span></div>
+        <div class="stat"><span>Tiempo promedio</span><span id="sumAvg">0s</span></div>
+      </div>
+    </div>
+  </section>
+  <p class="footer">Actividad gamificada sobre ISO/IEC 12207. Guarda tu mejor puntaje automáticamente.</p>
+</div>
+
+<script>
+const QUESTIONS = [
+  { q:"¿Qué define principalmente ISO/IEC 12207?", options:[
+      "Un conjunto de roles y sueldos para equipos de software.",
+      "Procesos, actividades y tareas para el ciclo de vida del software.",
+      "Un método ágil concreto para sprints de dos semanas.",
+      "Un estándar exclusivo para hardware embebido."
+    ], a:1, why:"Establece procesos del ciclo de vida; no prescribe una metodología ágil específica.", hint:"Piensa en 'qué' hacer (procesos) más que 'cómo' (metodología)." },
+  { q:"¿Cuál de los siguientes pertenece a la verificación?", options:[
+      "Comprobar con usuarios que el producto satisface necesidades reales.",
+      "Demostrar que el producto cumple con su especificación.",
+      "Estimar valor entregado por release.",
+      "Definir el backlog inicial."
+    ], a:1, why:"Verificación = '¿Construimos el producto correctamente?'", hint:"Especificación frente a necesidad." },
+  { q:"La validación busca principalmente…", options:[
+      "Cumplir la cobertura de pruebas unitarias.",
+      "Aprobar auditorías internas.",
+      "Confirmar que el software satisface las necesidades del usuario/negocio.",
+      "Medir el rendimiento del pipeline CI/CD."
+    ], a:2, why:"Validación = '¿Construimos el producto correcto?'", hint:"Usuario/negocio por encima de la especificación." },
+  { q:"El 'tailoring' o adecuación implica:", options:[
+      "Eliminar toda la documentación para moverse más rápido.",
+      "Seleccionar y ajustar procesos/artefactos según el contexto.",
+      "Fijar por contrato todos los cambios posibles del alcance.",
+      "Cambiar la norma para que exija Scrum."
+    ], a:1, why:"Se adapta qué aplicar y con qué evidencia mínima según riesgos/tamaño.", hint:"Adaptación al contexto." },
+  { q:"¿Cuál es un artefacto típico de gestión de la configuración?", options:[
+      "Backlog priorizado.",
+      "Registro de riesgos.",
+      "Repositorio con control de versiones y etiquetas.",
+      "Encuesta de satisfacción del usuario."
+    ], a:2, why:"Control de versiones, baselines y trazabilidad pertenecen a configuración.", hint:"Piensa en Git y versiones." },
+  { q:"Proceso más relacionado con puesta en producción y soporte:", options:[
+      "Operación y Mantenimiento.",
+      "Diseño y Construcción.",
+      "Adquisición.",
+      "Requisitos del sistema."
+    ], a:0, why:"Cubre despliegue, soporte e incidentes.", hint:"Después del release..." },
+  { q:"Evidencia mínima razonable para requisitos:", options:[
+      "Solo mensajes de chat.",
+      "Historias de usuario con criterios de aceptación y trazabilidad.",
+      "Un diagrama UML sin texto.",
+      "La lista de integrantes del equipo."
+    ], a:1, why:"Resultados claros y trazables facilitan V&V.", hint:"Historias + criterios." },
+  { q:"¿Qué par resume mejor V&V?", options:[
+      "Velocidad y Valor.",
+      "Versionado y Validación.",
+      "Verificación y Validación.",
+      "Visibilidad y Visión."
+    ], a:2, why:"V&V = Verificación y Validación.", hint:"La V doble." },
+  { q:"¿Cuál es un proceso de soporte transversal?", options:[
+      "Implementación.",
+      "Revisión conjunta / Auditoría.",
+      "Adquisición.",
+      "Operación."
+    ], a:1, why:"Apoyan calidad y gobierno sobre otros procesos.", hint:"Calidad que atraviesa todo." },
+  { q:"12207 y metodologías ágiles…", options:[
+      "Prohíbe Scrum y Kanban.",
+      "Solo aplica a proyectos en cascada.",
+      "Puede integrarse con marcos ágiles; define procesos y evidencias, no sprints.",
+      "Exige iteraciones de exactamente dos semanas."
+    ], a:2, why:"Se enfoca en procesos/resultados; convive con enfoques ágiles.", hint:"Compatibilidad, no imposición." }
+];
+
+const TOTAL = QUESTIONS.length;
+const MAX_LIVES = 3;
+const TIME_LIMIT = 20;
+const BASE_POINTS = 100;
+const TIME_BONUS = 5;
+const MULT_CAP = 5;
+
+let idx=0, score=0, streak=0, maxStreak=0, lives=MAX_LIVES;
+let used5050=false, usedHint=false, usedSkip=false;
+let can5050=true, canHint=true, canSkip=true;
+let timer=null, tLeft=TIME_LIMIT;
+let answered=false, rightCount=0, wrongCount=0;
+let totalTime=0;
+
+const el = (id)=>document.getElementById(id);
+const qtitle=el('qtitle'), qnum=el('qnum'), qtotal=el('qtotal'), options=el('options');
+const timebar=el('timebar'), tleft=el('tleft'), feedback=el('feedback');
+const scoreEl=el('score'), streakEl=el('streak'), multEl=el('mult'), livesEl=el('lives');
+const progEl=el('prog'), progbar=el('progbar'), accEl=el('acc'), bestEl=el('best');
+const hintBox=el('hintBox');
+
+function hearts(n){ return '❤️'.repeat(n)+'🖤'.repeat(MAX_LIVES-n); }
+function multiplier(){ return (1 + Math.min(streak,MULT_CAP)*0.2).toFixed(1); }
+function playBeep(ok=true){
+  const ctx = new (window.AudioContext||window.webkitAudioContext)();
+  const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.type='sine'; o.frequency.value = ok ? 880 : 220;
+  g.gain.value = 0.001; g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + .02);
+  o.start(); g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + .25); o.stop(ctx.currentTime + .26);
+}
+
+const confettiCanvas = document.getElementById('confetti');
+const cctx = confettiCanvas.getContext('2d');
+function resizeCanvas(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+resizeCanvas(); addEventListener('resize', resizeCanvas);
+let confettiParticles=[];
+function launchConfetti(){
+  confettiParticles=[];
+  for(let i=0;i<120;i++){
+    confettiParticles.push({
+      x: Math.random()*innerWidth, y: -10, r: 3+Math.random()*5,
+      c: `hsl(${Math.random()*360},90%,60%)`, vy: 2+Math.random()*4, vx: (Math.random()-.5)*2, a: Math.random()*Math.PI
+    });
+  }
+  let frames=0;
+  function draw(){
+    cctx.clearRect(0,0,innerWidth,innerHeight);
+    confettiParticles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.a+=0.1;
+      cctx.save();
+      cctx.translate(p.x,p.y);
+      cctx.rotate(p.a);
+      cctx.fillStyle=p.c;
+      cctx.fillRect(-p.r,-p.r,p.r*2,p.r*2);
+      cctx.restore();
+    });
+    frames++;
+    if(frames<120) requestAnimationFrame(draw);
+    else cctx.clearRect(0,0,innerWidth,innerHeight);
+  }
+  draw();
+}
+
+function loadBest(){ bestEl.textContent = localStorage.getItem('iso12207_best') || 0; }
+function updateStats(){
+  scoreEl.textContent = Math.round(score);
+  streakEl.textContent = streak;
+  multEl.textContent = multiplier();
+  livesEl.textContent = hearts(lives);
+  const progress = Math.round((idx)/TOTAL*100);
+  progEl.textContent = progress+'%'; progbar.style.width = progress+'%';
+  const ans = rightCount + wrongCount;
+  const acc = ans? Math.round(rightCount/ans*100):0; accEl.textContent = acc+'%';
+}
+
+function startTimer(){
+  stopTimer();
+  tLeft = TIME_LIMIT; tleft.textContent = tLeft; timebar.style.width='100%';
+  const start = Date.now();
+  timer = setInterval(()=>{
+    const elapsed = Math.floor((Date.now()-start)/1000);
+    tLeft = Math.max(0, TIME_LIMIT - elapsed);
+    tleft.textContent = tLeft;
+    timebar.style.width = (tLeft/TIME_LIMIT*100)+'%';
+    if(tLeft===0){ outOfTime(); }
+  }, 200);
+}
+function stopTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+
+function renderQuestion(){
+  const item = QUESTIONS[idx];
+  qnum.textContent = (idx+1);
+  qtotal.textContent = TOTAL;
+  qtitle.textContent = item.q;
+  options.innerHTML = '';
+  feedback.innerHTML='';
+  hintBox.classList.add('hidden'); hintBox.textContent='';
+  answered=false; usedHint=false; used5050=false;
+  el('next').disabled = true; el('confirm').disabled=false;
+  QUESTIONS[idx].__start = Date.now();
+  item.options.forEach((text, j)=>{
+    const div = document.createElement('label');
+    div.className = 'opt glow';
+    div.innerHTML = `<input type="radio" name="q" value="${j}"><span>${text}</span>`;
+    options.appendChild(div);
+  });
+  startTimer(); updateStats();
+}
+
+function getSelected(){
+  const r = document.querySelector('input[name="q"]:checked');
+  return r? parseInt(r.value,10) : null;
+}
+
+function evaluate(selected){
+  if(answered) return;
+  answered = true;
+  stopTimer();
+  const item = QUESTIONS[idx];
+  const spent = Math.round((Date.now()-item.__start)/1000);
+  totalTime += spent;
+  const correct = selected===item.a;
+  const nodes = options.querySelectorAll('.opt');
+  nodes.forEach((n,i)=>{
+    n.classList.add('disabled');
+    if(i===item.a) n.classList.add('correct');
+  });
+  if(selected!=null && selected!==item.a){
+    nodes[selected].classList.add('incorrect');
+  }
+  let pts = 0;
+  if(correct){
+    streak++; maxStreak = Math.max(maxStreak, streak);
+    const base = usedHint ? BASE_POINTS*0.5 : BASE_POINTS;
+    const bonus = Math.max(0, TIME_LIMIT - spent) * TIME_BONUS;
+    const mult = parseFloat(multiplier());
+    pts = Math.round((base + bonus) * mult);
+    score += pts; rightCount++;
+    feedback.innerHTML = `<strong>✔ ¡Correcto!</strong> +${pts} pts. ${item.why}`;
+    playBeep(true); launchConfetti();
+  }else{
+    streak = 0; wrongCount++; lives--;
+    feedback.innerHTML = `<strong>✖ Incorrecto.</strong> ${item.why}`;
+    playBeep(false);
+    if(lives<=0){ return endGame(); }
+  }
+  el('next').disabled = false; el('confirm').disabled = true;
+  updateStats(); awardOnTheFly();
+}
+
+function outOfTime(){
+  evaluate(null);
+}
+
+function awardOnTheFly(){
+  const box = document.getElementById('badges');
+  if(streak===3) addBadge(box,'🔥 Racha x3','i','Mantén el ritmo');
+  if(score>=500 && !document.getElementById('b500')) addBadge(box,'⭐ 500+ pts','i','Buen comienzo','b500');
+  if(rightCount===5) addBadge(box,'🎯 5 correctas','i','Precisión en alza');
+}
+function addBadge(container, text, icon='i', tip='', id=null){
+  if(id && document.getElementById(id)) return;
+  const elem = document.createElement('span');
+  elem.className='badge'; if(id) elem.id=id;
+  elem.title=tip; elem.innerHTML=`<i>🏅</i>${text}`;
+  container.appendChild(elem);
+}
+
+function fiftyFifty(){
+  if(!can5050) return;
+  const item = QUESTIONS[idx];
+  const wrongIdx = [0,1,2,3].filter(n=>n!==item.a);
+  shuffle(wrongIdx);
+  const toHide = wrongIdx.slice(0,2);
+  const nodes = options.querySelectorAll('.opt');
+  toHide.forEach(i=>{ nodes[i].classList.add('disabled'); nodes[i].style.opacity=.35; nodes[i].querySelector('input').disabled=true; });
+  can5050=false; used5050=true; document.getElementById('fifty').classList.add('disabled');
+}
+function showHint(){
+  if(!canHint) return;
+  const item = QUESTIONS[idx];
+  hintBox.textContent = 'Pista: ' + (item.hint || 'Piensa en la idea central del concepto.');
+  hintBox.classList.remove('hidden');
+  canHint=false; usedHint=true; document.getElementById('hint').classList.add('disabled');
+}
+function skip(){
+  if(!canSkip) return;
+  usedSkip=true; canSkip=false; document.getElementById('skip').classList.add('disabled');
+  stopTimer(); feedback.innerHTML = "<strong>⏭️ Saltado.</strong> 0 pts. Mira la respuesta y sigue.";
+  const item = QUESTIONS[idx];
+  const nodes = options.querySelectorAll('.opt');
+  nodes.forEach((n,i)=>{ n.classList.add('disabled'); if(i===item.a) n.classList.add('correct'); });
+  el('next').disabled=false; el('confirm').disabled=true;
+}
+
+function nextQuestion(){
+  idx++;
+  if(idx>=TOTAL){ endGame(); }
+  else renderQuestion();
+}
+
+function endGame(){
+  stopTimer();
+  document.getElementById('game').classList.add('hidden');
+  document.getElementById('summary').classList.remove('hidden');
+  const avg = (rightCount+wrongCount)>0 ? Math.round(totalTime/(rightCount+wrongCount)) : 0;
+  el('finalScore').textContent = 'Puntaje: ' + Math.round(score);
+  el('sumRight').textContent = rightCount;
+  el('sumWrong').textContent = wrongCount;
+  el('sumStreak').textContent = maxStreak;
+  el('sumAvg').textContent = avg + 's';
+  const percent = Math.round((rightCount/TOTAL)*100);
+  let msg = '';
+  if(percent>=90) msg = '🏆 Dominio sobresaliente. ¡Maestro/a de 12207!';
+  else if(percent>=75) msg = '🎉 Muy bien. Refuerza matices entre Verificación y Validación.';
+  else if(percent>=60) msg = '👍 Buen avance. Repasa procesos de soporte y configuración.';
+  else msg = '🌱 Sigue practicando. Enfócate en tailoring y artefactos mínimos.';
+  el('finalMsg').textContent = msg;
+
+  const box = el('finalBadges'); box.innerHTML='';
+  if(maxStreak>=4) addBadge(box,'🔥 Racha máxima 4+');
+  if(score>=1200) addBadge(box,'💎 1200+ puntos');
+  if(percent===100) addBadge(box,'🌟 Perfecto 100%');
+
+  const best = parseInt(localStorage.getItem('iso12207_best')||'0',10);
+  if(score>best){ localStorage.setItem('iso12207_best', Math.round(score)); }
+  loadBest();
+}
+
+function restart(){
+  idx=0; score=0; streak=0; maxStreak=0; lives=MAX_LIVES;
+  used5050=usedHint=usedSkip=false;
+  can5050=canHint=canSkip=true;
+  rightCount=wrongCount=0; totalTime=0;
+  document.getElementById('summary').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  ['hint','fifty','skip'].forEach(id=>document.getElementById(id).classList.remove('disabled'));
+  renderQuestion();
+}
+
+document.getElementById('confirm').addEventListener('click', ()=>{
+  const s = getSelected();
+  if(s===null){ feedback.innerHTML = "<strong>⚠ Elige una opción</strong> antes de confirmar."; return; }
+  evaluate(s);
+});
+document.getElementById('next').addEventListener('click', nextQuestion);
+document.getElementById('hint').addEventListener('click', showHint);
+document.getElementById('fifty').addEventListener('click', fiftyFifty);
+document.getElementById('skip').addEventListener('click', skip);
+document.getElementById('restart').addEventListener('click', restart);
+document.getElementById('playAgain').addEventListener('click', restart);
+document.getElementById('print').addEventListener('click', ()=>window.print());
+document.getElementById('print2').addEventListener('click', ()=>window.print());
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+loadBest();
+renderQuestion();
+updateStats();
+</script>
+</body>
+</html>
