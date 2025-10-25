@@ -606,6 +606,166 @@
     pointer-events:none;
     z-index:9999;
   }
+
+  /* Modal para datos del participante */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 7, 10, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: linear-gradient(135deg, rgba(10,14,23,0.95), rgba(15,20,32,0.95));
+    border: 1px solid rgba(0,217,255,0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  
+  .modal h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0,217,255,0.3);
+    background: rgba(15,20,32,0.8);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  
+  /* Estilos para el certificado */
+  .certificate {
+    background: white;
+    color: #333;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Times New Roman', serif;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border: 5px double #2c3e50;
+    position: relative;
+  }
+  
+  .certificate-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #2c3e50;
+    padding-bottom: 1rem;
+  }
+  
+  .certificate-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+  
+  .certificate-header h2 {
+    font-size: 1.5rem;
+    color: #7c3aed;
+    margin-bottom: 1rem;
+  }
+  
+  .certificate-body {
+    margin: 2rem 0;
+    text-align: center;
+  }
+  
+  .certificate-body p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  
+  .certificate-name {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-top: 2px solid #2c3e50;
+    border-bottom: 2px solid #2c3e50;
+  }
+  
+  .certificate-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+  }
+  
+  .certificate-details div {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .certificate-details .signature {
+    border-top: 1px solid #2c3e50;
+    padding-top: 1rem;
+    margin-top: 3rem;
+  }
+  
+  .certificate-code {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #7c3aed;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+  }
+  
+  .certificate-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  /* Estilos para impresión del certificado */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .certificate, .certificate * {
+      visibility: visible;
+    }
+    .certificate {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      box-shadow: none;
+      border: none;
+    }
+    .no-print {
+      display: none !important;
+    }
+  }
   
   /* Responsive - Mobile first */
   @media (min-width:768px) {
@@ -725,6 +885,25 @@
 </head>
 <body>
 <canvas id="confetti"></canvas>
+
+<!-- Modal para datos del participante -->
+<div id="participantModal" class="modal">
+  <div class="modal-content">
+    <h2>Datos del Participante</h2>
+    <div class="form-group">
+      <label for="participantName">Nombre Completo</label>
+      <input type="text" id="participantName" placeholder="Ingresa tu nombre completo">
+    </div>
+    <div class="form-group">
+      <label for="studentCode">Código de Estudiante</label>
+      <input type="text" id="studentCode" placeholder="Ingresa tu código de estudiante">
+    </div>
+    <div class="actions">
+      <button class="primary" id="saveParticipant">Comenzar Quiz</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <div class="wrap">
     <div class="meta">
@@ -775,6 +954,7 @@
       <div style="margin-top:0.8rem" class="actions">
         <button id="restart">🔄 Reiniciar</button>
         <button id="print">🖨️ Imprimir</button>
+        <button id="certificate">📜 Certificado</button>
       </div>
     </section>
     <section class="card">
@@ -794,6 +974,7 @@
         <div class="actions">
           <button class="primary" id="playAgain">Jugar de nuevo</button>
           <button id="print2">Imprimir</button>
+          <button id="certificate2">📜 Certificado</button>
         </div>
       </div>
       <div class="right">
@@ -805,6 +986,41 @@
     </div>
   </section>
   <p class="footer">Actividad gamificada sobre ISO/IEC 12207. Guarda tu mejor puntaje automáticamente.</p>
+</div>
+
+<!-- Certificado oculto para imprimir -->
+<div id="certificateContainer" class="hidden">
+  <div class="certificate">
+    <div class="certificate-header">
+      <h1>CERTIFICADO DE PARTICIPACIÓN</h1>
+      <h2>Quiz ISO/IEC 12207</h2>
+    </div>
+    <div class="certificate-body">
+      <p>Se otorga el presente certificado a:</p>
+      <div class="certificate-name" id="certName">Nombre del Participante</div>
+      <p>Por haber completado exitosamente el quiz gamificado sobre el estándar ISO/IEC 12207, demostrando conocimientos en procesos del ciclo de vida del software, verificación, validación y tailoring.</p>
+      <p>Con un puntaje final de: <strong id="certScore">0</strong> puntos</p>
+      <div class="certificate-code">Código de verificación: <span id="certCode">ABC123XYZ</span></div>
+    </div>
+    <div class="certificate-details">
+      <div>
+        <div class="signature">
+          <p>_________________________</p>
+          <p>Firma del Participante</p>
+        </div>
+      </div>
+      <div>
+        <p>Fecha: <span id="certDate">01/01/2023</span></p>
+        <div class="signature">
+          <p>_________________________</p>
+          <p>Quiz Gamificado ISO/IEC 12207</p>
+        </div>
+      </div>
+    </div>
+    <div class="certificate-footer">
+      <p>Este certificado es otorgado electrónicamente y puede ser verificado con el código proporcionado.</p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -884,6 +1100,8 @@ let can5050=true, canHint=true, canSkip=true;
 let timer=null, tLeft=TIME_LIMIT;
 let answered=false, rightCount=0, wrongCount=0;
 let totalTime=0;
+let participantName = "";
+let studentCode = "";
 
 const el = (id)=>document.getElementById(id);
 const qtitle=el('qtitle'), qnum=el('qnum'), qtotal=el('qtotal'), options=el('options');
@@ -1112,6 +1330,83 @@ function restart(){
   renderQuestion();
 }
 
+function generateCertificateCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 9; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+function showCertificate() {
+  // Verificar si tenemos los datos del participante
+  if (!participantName || !studentCode) {
+    alert("Por favor, ingresa tus datos antes de generar el certificado.");
+    showParticipantModal();
+    return;
+  }
+  
+  // Actualizar el certificado con los datos actuales
+  document.getElementById('certName').textContent = participantName;
+  document.getElementById('certScore').textContent = Math.round(score);
+  document.getElementById('certCode').textContent = generateCertificateCode();
+  
+  // Establecer la fecha actual
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('es-ES');
+  document.getElementById('certDate').textContent = formattedDate;
+  
+  // Mostrar el certificado para imprimir
+  const certificateContainer = document.getElementById('certificateContainer');
+  certificateContainer.classList.remove('hidden');
+  
+  // Imprimir el certificado
+  window.print();
+  
+  // Ocultar el certificado después de imprimir
+  setTimeout(() => {
+    certificateContainer.classList.add('hidden');
+  }, 500);
+}
+
+function showParticipantModal() {
+  document.getElementById('participantModal').classList.remove('hidden');
+}
+
+function saveParticipantData() {
+  const name = document.getElementById('participantName').value.trim();
+  const code = document.getElementById('studentCode').value.trim();
+  
+  if (!name || !code) {
+    alert("Por favor, completa todos los campos.");
+    return;
+  }
+  
+  participantName = name;
+  studentCode = code;
+  
+  // Guardar en localStorage
+  localStorage.setItem('iso12207_participantName', participantName);
+  localStorage.setItem('iso12207_studentCode', studentCode);
+  
+  // Ocultar el modal
+  document.getElementById('participantModal').classList.add('hidden');
+  
+  // Iniciar el juego
+  renderQuestion();
+}
+
+function loadParticipantData() {
+  participantName = localStorage.getItem('iso12207_participantName') || "";
+  studentCode = localStorage.getItem('iso12207_studentCode') || "";
+  
+  // Si no hay datos guardados, mostrar el modal
+  if (!participantName || !studentCode) {
+    showParticipantModal();
+  }
+}
+
 document.getElementById('confirm').addEventListener('click', ()=>{
   const s = getSelected();
   if(s===null){ feedback.innerHTML = "<strong>⚠ Elige una opción</strong> antes de confirmar."; return; }
@@ -1125,11 +1420,15 @@ document.getElementById('restart').addEventListener('click', restart);
 document.getElementById('playAgain').addEventListener('click', restart);
 document.getElementById('print').addEventListener('click', ()=>window.print());
 document.getElementById('print2').addEventListener('click', ()=>window.print());
+document.getElementById('certificate').addEventListener('click', showCertificate);
+document.getElementById('certificate2').addEventListener('click', showCertificate);
+document.getElementById('saveParticipant').addEventListener('click', saveParticipantData);
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
+// Inicializar la aplicación
 loadBest();
-renderQuestion();
+loadParticipantData();
 updateStats();
 </script>
 </body>
